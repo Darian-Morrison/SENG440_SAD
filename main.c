@@ -4,7 +4,7 @@
 #include "bmp_file.h"
 
 unsigned char calculate_luminance(unsigned char red, unsigned char blue, unsigned char green);
-void populate_luminance_arrays(unsigned char* ,FILE* fp, struct Bitmap_Headers bmp);
+char sum_of_difference(unsigned char reference, unsigned char current);
 
 int main(int argc, char *argv[]){
 
@@ -26,17 +26,51 @@ int main(int argc, char *argv[]){
     struct Bitmap_Headers current_bmp = get_header_values(current_fp);
 
 //Convert Data to Luminance Pixels
-    unsigned char reference_luminance_pixles[reference_bmp.pixels];
-    unsigned char current_luminance_pixles[current_bmp.pixels];
+    unsigned char reference_luminance_pixles[reference_bmp.height][reference_bmp.width];
+    unsigned char current_luminance_pixles[current_bmp.height][current_bmp.width];
 
-    populate_luminance_arrays(reference_luminance_pixles, reference_fp, reference_bmp);
-    populate_luminance_arrays(current_luminance_pixles, current_fp, current_bmp);
+    fseek( reference_fp, reference_bmp.offset, SEEK_SET );
+    fseek( current_fp, current_bmp.offset, SEEK_SET );
 
-//Perform algorithm
+    unsigned char red, blue, green = 0;
+    int j;
 
+    for(i = 0; i < reference_bmp.height; i++){
+        for(j = 0; j < reference_bmp.width; j++){
+        //reference
+            blue = fgetc(reference_fp);
+            green = fgetc(reference_fp);
+            red = fgetc(reference_fp);
+            fgetc(reference_fp);
+            reference_luminance_pixles[i][j] = calculate_luminance(red, green, blue);
+        //current
+            blue = fgetc(current_fp);
+            green = fgetc(current_fp);
+            red = fgetc(current_fp);
+            fgetc(current_fp);
+            current_luminance_pixles[i][j] = calculate_luminance(red, green, blue);
+        }
+    }
 //Close Files
     fclose(reference_fp);
     fclose(current_fp);
+
+//Perform algorithm
+    int sad= 0;
+    char diff;
+
+    for(i = 0; i < 16; i++){
+        for(j = 0; j < 16; j++){
+            diff = reference_luminance_pixles[i][j] - current_luminance_pixles[i][j];
+            if( diff < 0){
+                sad -= diff;
+            }else{
+                sad += diff;
+            }
+        }
+    }
+
+    printf("SAD Block 1=%d\n", sad);
 
     return 0;
 }
@@ -48,25 +82,3 @@ unsigned char calculate_luminance(unsigned char red, unsigned char green, unsign
     return (unsigned char) luminance;
 }
 
-void populate_luminance_arrays(unsigned char* luminance_pixles,FILE* fp, struct Bitmap_Headers bmp){
-    fseek( fp, bmp.offset, SEEK_SET );
-
-    unsigned char red = 0;
-    unsigned char blue = 0;
-    unsigned char green = 0;
-
-    int i;
-
-    for(i = 0; i < bmp.pixels; i++){
-        unsigned char blue = fgetc(fp);
-        unsigned char green = fgetc(fp);
-        unsigned char red = fgetc(fp);
-        unsigned char alpha = fgetc(fp);
-        luminance_pixles[i] = calculate_luminance(red, green, blue);
-        // int temp_pixel = 0;
-        // temp_pixel += (unsigned int) fgetc(fp) << 24; 
-        // temp_pixel += (unsigned int) fgetc(fp) << 16;
-        // temp_pixel += (unsigned int) fgetc(fp) << 8;
-        // temp_pixel += (unsigned int) fgetc(fp);
-    }
-}
