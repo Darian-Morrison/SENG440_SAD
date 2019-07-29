@@ -4,6 +4,7 @@
 #include "bmp_file.h"
 
 unsigned char calculate_luminance(unsigned char red, unsigned char blue, unsigned char green);
+void populate_luminance_arrays(unsigned char* ,FILE* fp, struct Bitmap_Headers bmp);
 
 int main(int argc, char *argv[]){
 
@@ -14,25 +15,49 @@ int main(int argc, char *argv[]){
     }
     char *filename = argv[1];
 
-    FILE *fp;
+    FILE *reference_fp;
+    FILE *current_fp;
+//Open Files
+    reference_fp = open_file(argv[1]);
+    current_fp = open_file(argv[2]);
 
-    fp = open_file(filename);
+//Get Headers
+    struct Bitmap_Headers reference_bmp = get_header_values(reference_fp);
+    struct Bitmap_Headers current_bmp = get_header_values(current_fp);
 
-    struct Bitmap_Headers bmp = get_header_values(fp);
+//Convert Data to Luminance Pixels
+    unsigned char reference_luminance_pixles[reference_bmp.pixels];
+    unsigned char current_luminance_pixles[current_bmp.pixels];
 
+    populate_luminance_arrays(reference_luminance_pixles, reference_fp, reference_bmp);
+    populate_luminance_arrays(current_luminance_pixles, current_fp, current_bmp);
 
-    //Handle data
+//Perform algorithm
+
+//Close Files
+    fclose(reference_fp);
+    fclose(current_fp);
+
+    return 0;
+}
+
+//((Red value X 299) + (Green value X 587) + (Blue value X 114)) / 1000
+unsigned char calculate_luminance(unsigned char red, unsigned char green, unsigned char blue){
+
+    unsigned int luminance = ((299 * red + 587 * green + blue * 114))/1000;
+    return (unsigned char) luminance;
+}
+
+void populate_luminance_arrays(unsigned char* luminance_pixles,FILE* fp, struct Bitmap_Headers bmp){
     fseek( fp, bmp.offset, SEEK_SET );
 
     unsigned char red = 0;
     unsigned char blue = 0;
     unsigned char green = 0;
 
-    unsigned char luminance_pixles[bmp.pixels];
+    int i;
 
-    
     for(i = 0; i < bmp.pixels; i++){
-        
         unsigned char blue = fgetc(fp);
         unsigned char green = fgetc(fp);
         unsigned char red = fgetc(fp);
@@ -44,21 +69,4 @@ int main(int argc, char *argv[]){
         // temp_pixel += (unsigned int) fgetc(fp) << 8;
         // temp_pixel += (unsigned int) fgetc(fp);
     }
-
-    printf("%X\n", luminance_pixles[bmp.pixels - 1]);
-
-    printf("Size: %d x %d\n", bmp.width, bmp.height);
-    printf("Blocks: %d\n", bmp.number_of_chunks);
-    printf("Count: %d\n", bmp.pixels);
-
-    fclose(fp);
-
-    return 0;
 }
-
-//((Red value X 299) + (Green value X 587) + (Blue value X 114)) / 1000
-unsigned char calculate_luminance(unsigned char red, unsigned char green, unsigned char blue){
-
-    unsigned int luminance = ((299 * red + 587 * green + blue * 114))/1000;
-    return (unsigned char) luminance;
-}   
