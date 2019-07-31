@@ -84,6 +84,7 @@ int main(int argc, char *argv[]){
                     for(i = 0; i < 16; i++){
                         for(j = 0; j < 16; j++){
                             diff = reference_luminance_pixles[reference_y + i][reference_x + j] - current_luminance_pixles[current_y + i][current_x + j];
+                            printf("%d\n",diff );
                             if( diff < 0){
                                 sad -= diff;
                             }else{
@@ -91,7 +92,7 @@ int main(int argc, char *argv[]){
                             }
                         }
                     }
-                    printf("%d\n",sad );
+
 
                     //If best Sad replace motion array and update value
                     if(sad == best_sad && abs(displacement_x) + abs(displacement_y) < abs(vector.x) + abs(vector.y)){
