@@ -84,7 +84,6 @@ int main(int argc, char *argv[]){
                     for(i = 0; i < 16; i++){
                         for(j = 0; j < 16; j++){
                             diff = (short int) reference_luminance_pixles[reference_y + i][reference_x + j] - (short int) current_luminance_pixles[current_y + i][current_x + j];
-                            printf("%d\n",diff );
                             if( diff < 0){
                                 sad -= diff;
                             }else{
