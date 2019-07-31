@@ -124,7 +124,7 @@ int main(int argc, char *argv[]){
 //((Red value X 299) + (Green value X 587) + (Blue value X 114)) / 1000
 unsigned char calculate_luminance(unsigned char red, unsigned char green, unsigned char blue){
 
-    unsigned int luminance = ((299 * red + 0 * green + blue * 114))/1000;
+    unsigned int luminance = ((299 * red + 587 * green + blue * 114))/1000;
 
     return (unsigned char) luminance;
 }
