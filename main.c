@@ -91,6 +91,7 @@ int main(int argc, char *argv[]){
                             }
                         }
                     }
+                    printf("%d\n",sad );
 
                     //If best Sad replace motion array and update value
                     if(sad == best_sad && abs(displacement_x) + abs(displacement_y) < abs(vector.x) + abs(vector.y)){
@@ -124,7 +125,6 @@ int main(int argc, char *argv[]){
 unsigned char calculate_luminance(unsigned char red, unsigned char green, unsigned char blue){
 
     unsigned int luminance = ((299 * red + 0 * green + blue * 114))/1000;
-    printf("%X\n", (unsigned char) luminance);
 
     return (unsigned char) luminance;
 }
