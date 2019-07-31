@@ -64,7 +64,7 @@ int main(int argc, char *argv[]){
 
 //Perform algorithm
     int sad, best_sad,current_y, current_x, reference_y, reference_x, displacement_y, displacement_x = 0;
-    char diff;
+    short int diff;
     struct Motion_Vector vector = {0,0};
 
     struct Motion_Vector motion_array[reference_bmp.height/16][reference_bmp.width/16];
@@ -83,7 +83,7 @@ int main(int argc, char *argv[]){
                     sad = 0;
                     for(i = 0; i < 16; i++){
                         for(j = 0; j < 16; j++){
-                            diff = reference_luminance_pixles[reference_y + i][reference_x + j] - current_luminance_pixles[current_y + i][current_x + j];
+                            diff = (short int) reference_luminance_pixles[reference_y + i][reference_x + j] - (short int) current_luminance_pixles[current_y + i][current_x + j];
                             printf("%d\n",diff );
                             if( diff < 0){
                                 sad -= diff;
