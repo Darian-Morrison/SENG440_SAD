@@ -10,7 +10,7 @@ char sum_of_difference(unsigned char reference, unsigned char current);
 
 struct Motion_Vector
 {
-    int x, y;
+    int x, y, sad;
 };
 
 int main(int argc, char *argv[]){
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]){
     fclose(current_fp);
 
 //Perform algorithm
-    int sad, best_sad,current_y, current_x, reference_y, reference_x, displacement_y, displacement_x = 0;
+    int sad, current_y, current_x, reference_y, reference_x, displacement_y, displacement_x = 0;
     short int diff;
     struct Motion_Vector vector = {0,0};
 
@@ -72,12 +72,10 @@ int main(int argc, char *argv[]){
 //For each block of current 
     for(current_y = 0; current_y < reference_bmp.height; current_y+=16){
         for(current_x = 0; current_x <  reference_bmp.width; current_x+=16){
-            best_sad = INT_MAX;
+            motion_array[current_y/16][current_x/16].sad = INT_MAX;
             //For every location in reference, find best_sad
             for(reference_y = 0; reference_y < reference_bmp.height - 15; reference_y++){
                 for(reference_x = 0; reference_x <  reference_bmp.width - 15; reference_x++){
-                    displacement_x = current_x - reference_x;
-                    displacement_y = current_y - reference_y;
                     vector = motion_array[current_y/16][current_x/16];
                     //SAD
                     sad = 0;
@@ -91,17 +89,19 @@ int main(int argc, char *argv[]){
                             }
                         }
                     }
-
-
+                    displacement_x = current_x - reference_x;
+                    displacement_y = current_y - reference_y;
                     //If best Sad replace motion array and update value
-                    if(sad == best_sad && abs(displacement_x) + abs(displacement_y) < abs(vector.x) + abs(vector.y)){
+                    if(sad == motion_array[current_y/16][current_x/16].sad && abs(displacement_x) + abs(displacement_y) < abs(vector.x) + abs(vector.y)){
                         motion_array[current_y/16][current_x/16].y = displacement_y;
                         motion_array[current_y/16][current_x/16].x = displacement_x;
+                        motion_array[current_y/16][current_x/16].sad = sad;
                     }
-                    if(sad < best_sad){
-                        best_sad = sad;
+                    if(sad < motion_array[current_y/16][current_x/16].sad){
                         motion_array[current_y/16][current_x/16].y = displacement_y;
                         motion_array[current_y/16][current_x/16].x = displacement_x;
+                        motion_array[current_y/16][current_x/16].sad = sad;
+
                     }
 
                 }
@@ -109,14 +109,20 @@ int main(int argc, char *argv[]){
         }
     }
 
-    for(i = 0; i < reference_bmp.height/16; i++){
+    FILE *out_fp;
+    out_fp = fopen("motion_vectors.txt","w");
+    
+
+    for(i = reference_bmp.height/16 - 1; i >= 0; i--){
         for(j = 0; j < reference_bmp.width/16; j++){
             if(motion_array[i][j].x != 0 || motion_array[i][j].y != 0){
-               printf("(Block (%d, %d) -> (%d, %d)\n", j, i, motion_array[i][j].x, motion_array[i][j].y ); 
-            }  
+               printf("Block (%d, %d) -> (%d, %d, %d)\n", j, i, motion_array[i][j].x, motion_array[i][j].y, motion_array[i][j].sad ); 
+            }
+            fprintf (out_fp, "(%2d, %2d, %d) ", motion_array[i][j].x, motion_array[i][j].y, motion_array[i][j].sad);  
         }
+         fprintf (out_fp, "\n");  
     }
-//Sadd for a 16X16 block
+    fclose(out_fp);
 
     return 0;
 }
