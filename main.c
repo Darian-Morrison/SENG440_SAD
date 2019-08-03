@@ -6,7 +6,7 @@
 #include "bmp_file.h"
 
 unsigned char calculate_luminance(unsigned char red, unsigned char blue, unsigned char green);
-char sum_of_difference(unsigned char reference, unsigned char current);
+void calculate_row_sad(unsigned char *reference_row, unsigned char *current_row, int *sad, int reference_x , int current_x);
 
 struct Motion_Vector
 {
@@ -24,6 +24,7 @@ int main(int argc, char *argv[]){
 
     FILE *reference_fp;
     FILE *current_fp;
+
 //Open Files
     reference_fp = open_file(argv[1]);
     current_fp = open_file(argv[2]);
@@ -36,8 +37,8 @@ int main(int argc, char *argv[]){
     unsigned char reference_luminance_pixles[reference_bmp.height][reference_bmp.width];
     unsigned char current_luminance_pixles[current_bmp.height][current_bmp.width];
 
-    fseek( reference_fp, reference_bmp.offset, SEEK_SET );
-    fseek( current_fp, current_bmp.offset, SEEK_SET );
+    fseek(reference_fp, reference_bmp.offset, SEEK_SET);
+    fseek(current_fp, current_bmp.offset, SEEK_SET);
 
     unsigned char red, blue, green = 0;
     int j;
@@ -76,25 +77,25 @@ int main(int argc, char *argv[]){
             //For every location in reference, find best_sad
             for(reference_y = 0; reference_y < reference_bmp.height - 15; reference_y++){
                 for(reference_x = 0; reference_x <  reference_bmp.width - 15; reference_x++){
-                    vector = motion_array[current_y/16][current_x/16];
-
+                    vector = motion_array[current_y/16][current_x/16];  
                     //SAD
                     sad = 0;
                     for(i = 0; i < 16; i++){
-                        for(j = 0; j < 16; j+=2){
-                            diff_a = (int) reference_luminance_pixles[reference_y + i][reference_x + j] - (int) current_luminance_pixles[current_y + i][current_x + j];
-                            diff_b = (int) reference_luminance_pixles[reference_y + i][reference_x + j + 1] - (int) current_luminance_pixles[current_y + i][current_x + j + 1];
-                            if( diff_a < 0){
-                                sad -= diff_a;
-                            }else{
-                                sad += diff_a;
-                            }
-                            if( diff_b < 0){
-                                sad -= diff_b;
-                            }else{
-                                sad += diff_b;
-                            }
-                        }
+                        calculate_row_sad(reference_luminance_pixles[reference_y + i], current_luminance_pixles[current_y + i], &sad, reference_x, current_x);
+                        // for(j = 0; j < 16; j+=2){
+                        //     diff_a = (int) reference_luminance_pixles[reference_y + i][reference_x + j] - (int) current_luminance_pixles[current_y + i][current_x + j];
+                        //     diff_b = (int) reference_luminance_pixles[reference_y + i][reference_x + j + 1] - (int) current_luminance_pixles[current_y + i][current_x + j + 1];
+                        //     if( diff_a < 0){
+                        //         sad -= diff_a;
+                        //     }else{
+                        //         sad += diff_a;
+                        //     }
+                        //     if( diff_b < 0){
+                        //         sad -= diff_b;
+                        //     }else{
+                        //         sad += diff_b;
+                        //     }
+                        // }
                     }
 
                     displacement_x = current_x - reference_x;
@@ -109,9 +110,7 @@ int main(int argc, char *argv[]){
                         motion_array[current_y/16][current_x/16].y = displacement_y;
                         motion_array[current_y/16][current_x/16].x = displacement_x;
                         motion_array[current_y/16][current_x/16].sad = sad;
-
                     }
-
                 }
             }
         }
@@ -141,5 +140,23 @@ unsigned char calculate_luminance(unsigned char red, unsigned char green, unsign
     unsigned int luminance = ((299 * red + 587 * green + blue * 114))/1000;
 
     return (unsigned char) luminance;
+}
+
+void calculate_row_sad(unsigned char *reference_row, unsigned char *current_row, int *sad, int reference_x , int current_x){
+    int diff_a, diff_b,j;
+    for(j = 0; j < 16; j+=2){
+        diff_a = (int) reference_row[reference_x + j] - (int) current_row[current_x + j];
+        diff_b = (int) reference_row[reference_x + j + 1] - (int) current_row[current_x + j + 1];
+        if( diff_a < 0){
+            (*sad) -= diff_a;
+        }else{
+            (*sad) += diff_a;
+        }
+        if( diff_b < 0){
+            (*sad) -= diff_b;
+        }else{
+            (*sad) += diff_b;
+        }
+    }
 }
 
