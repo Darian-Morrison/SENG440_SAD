@@ -82,20 +82,6 @@ int main(int argc, char *argv[]){
                     sad = 0;
                     for(i = 0; i < 16; i++){
                         calculate_row_sad(reference_luminance_pixles[reference_y + i], current_luminance_pixles[current_y + i], &sad, reference_x, current_x);
-                        // for(j = 0; j < 16; j+=2){
-                        //     diff_a = (int) reference_luminance_pixles[reference_y + i][reference_x + j] - (int) current_luminance_pixles[current_y + i][current_x + j];
-                        //     diff_b = (int) reference_luminance_pixles[reference_y + i][reference_x + j + 1] - (int) current_luminance_pixles[current_y + i][current_x + j + 1];
-                        //     if( diff_a < 0){
-                        //         sad -= diff_a;
-                        //     }else{
-                        //         sad += diff_a;
-                        //     }
-                        //     if( diff_b < 0){
-                        //         sad -= diff_b;
-                        //     }else{
-                        //         sad += diff_b;
-                        //     }
-                        // }
                     }
 
                     displacement_x = current_x - reference_x;
