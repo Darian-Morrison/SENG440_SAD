@@ -64,8 +64,8 @@ int main(int argc, char *argv[]){
 
 //Perform algorithm
     int sad, current_y, current_x, reference_y, reference_x, displacement_y, displacement_x = 0;
-    short int diff;
-    struct Motion_Vector vector = {0,0};
+    int diff_a, diff_b;
+    struct Motion_Vector vector;
 
     struct Motion_Vector motion_array[reference_bmp.height/16][reference_bmp.width/16];
 
@@ -77,18 +77,26 @@ int main(int argc, char *argv[]){
             for(reference_y = 0; reference_y < reference_bmp.height - 15; reference_y++){
                 for(reference_x = 0; reference_x <  reference_bmp.width - 15; reference_x++){
                     vector = motion_array[current_y/16][current_x/16];
+
                     //SAD
                     sad = 0;
                     for(i = 0; i < 16; i++){
-                        for(j = 0; j < 16; j++){
-                            diff = (short int) reference_luminance_pixles[reference_y + i][reference_x + j] - (short int) current_luminance_pixles[current_y + i][current_x + j];
-                            if( diff < 0){
-                                sad -= diff;
+                        for(j = 0; j < 16; j+=2){
+                            diff_a = (int) reference_luminance_pixles[reference_y + i][reference_x + j] - (int) current_luminance_pixles[current_y + i][current_x + j];
+                            diff_b = (int) reference_luminance_pixles[reference_y + i][reference_x + j + 1] - (int) current_luminance_pixles[current_y + i][current_x + j + 1];
+                            if( diff_a < 0){
+                                sad -= diff_a;
                             }else{
-                                sad += diff;
+                                sad += diff_a;
+                            }
+                            if( diff_b < 0){
+                                sad -= diff_b;
+                            }else{
+                                sad += diff_b;
                             }
                         }
                     }
+
                     displacement_x = current_x - reference_x;
                     displacement_y = current_y - reference_y;
                     //If best Sad replace motion array and update value
