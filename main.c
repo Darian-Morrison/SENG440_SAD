@@ -64,43 +64,124 @@ int main(int argc, char *argv[]){
     fclose(current_fp);
 
 //Perform algorithm
-    int sad, current_y, current_x, reference_y, reference_x, displacement_y, displacement_x = 0;
+    int sad, temp_x, temp_y, reference_y, reference_x, displacement_y, displacement_x = 0;
     int diff_a, diff_b;
-    struct Motion_Vector vector;
+    int step = 8;
+    struct Motion_Vector home_vector;
+    struct Motion_Vector temp_vector;
 
     struct Motion_Vector motion_array[reference_bmp.height/16][reference_bmp.width/16];
 
-//For each block of current 
-    for(current_y = 0; current_y < reference_bmp.height; current_y+=16){
-        for(current_x = 0; current_x <  reference_bmp.width; current_x+=16){
-            motion_array[current_y/16][current_x/16].sad = INT_MAX;
-            //For every location in reference, find best_sad
-            for(reference_y = 0; reference_y < reference_bmp.height - 15; reference_y++){
-                for(reference_x = 0; reference_x <  reference_bmp.width - 15; reference_x++){
-                    vector = motion_array[current_y/16][current_x/16];  
-                    //SAD
+//For each block of reference 
+    for(reference_y = 0; reference_y < reference_bmp.height; reference_y+=16){
+        for(reference_x = 0; reference_x <  reference_bmp.width; reference_x+=16){
+            home_vector = motion_array[reference_y/16][reference_x/16];
+            home_vector.sad = INT_MAX;
+          
+
+            //home_sad
+            home_vector.sad = 0;
+            home_vector.x = reference_x;
+            home_vector.y = reference_y;
+            for(i = 0; i < 16; i++){
+                calculate_row_sad(reference_luminance_pixles[reference_y + i], current_luminance_pixles[home_vector.y + i], &home_vector.sad, reference_x, home_vector.x);
+            }
+            step = 8;
+
+            //Find best local sad
+            while(step >= 1){
+                temp_vector = home_vector;
+
+                //left sad
+              
+                if(temp_x >= 0){
                     sad = 0;
                     for(i = 0; i < 16; i++){
-                        calculate_row_sad(reference_luminance_pixles[reference_y + i], current_luminance_pixles[current_y + i], &sad, reference_x, current_x);
+                        calculate_row_sad(reference_luminance_pixles[reference_y + i], current_luminance_pixles[home_vector.y + i], &sad, reference_x, temp_x);
                     }
+                    if(reference_x == 112 && reference_y == 32){
+                        printf("Left Sad:(%d, %d, %d)\n", temp_x, home_vector.y, sad); 
+                    }
+                    if(sad < temp_vector.sad ){
+                        temp_vector.sad = sad;
+                        temp_vector.x = temp_x;
+                        temp_vector.y = home_vector.y;
+                    }   
+                }
+                
+                //right sad
+                temp_x = home_vector.x + step;
+                if(temp_x <= reference_bmp.width){
+                    sad = 0;
+                    for(i = 0; i < 16; i++){
+                        calculate_row_sad(reference_luminance_pixles[reference_y + i], current_luminance_pixles[home_vector.y + i], &sad, reference_x, temp_x);
+                    }
+                    if(reference_x == 112 && reference_y == 32){
+                        printf("Right Sad:(%d, %d, %d)\n", temp_x, home_vector.y, sad); 
+                    }
+                    if(sad < temp_vector.sad ){
+                        temp_vector.sad = sad;
+                        temp_vector.x = temp_x;
+                        temp_vector.y = home_vector.y;
+                    }      
+                }
+                //down sad
+                temp_y = home_vector.y - step;
+                if(temp_y >= 0){
+                    sad = 0;
+                    for(i = 0; i < 16; i++){
+                        calculate_row_sad(reference_luminance_pixles[reference_y + i], current_luminance_pixles[temp_y + i], &sad, reference_x, home_vector.x);
+                    }
+                    if(reference_x == 112 && reference_y == 32){
+                        printf("Down Sad:(%d, %d, %d)\n", home_vector.x, temp_y,  sad); 
+                    }
+                    if(sad < temp_vector.sad ){
+                        temp_vector.sad = sad;
+                        temp_vector.x = home_vector.x;
+                        temp_vector.y = temp_y;
+                    }   
+                }
+                
+                //up sad
+                temp_y = home_vector.y + step;
+                if(temp_y <= reference_bmp.height){
+                    sad = 0;
+                    for(i = 0; i < 16; i++){
+                        calculate_row_sad(reference_luminance_pixles[reference_y + i], current_luminance_pixles[temp_y + i], &sad, reference_x, home_vector.x);
+                    }
+                    if(reference_x == 112 && reference_y == 32){
+                        printf("Up Sad:(%d, %d, %d)\n", home_vector.x, temp_y,  sad); 
+                    }
+                    if( sad < temp_vector.sad){
+                        temp_vector.sad = sad;
+                        temp_vector.x = home_vector.x;
+                        temp_vector.y = temp_y;
+                    }   
+                }
 
-                    displacement_x = current_x - reference_x;
-                    displacement_y = current_y - reference_y;
-                    //If best Sad replace motion array and update value
-                    if(sad == motion_array[current_y/16][current_x/16].sad && abs(displacement_x) + abs(displacement_y) < abs(vector.x) + abs(vector.y)){
-                        motion_array[current_y/16][current_x/16].y = displacement_y;
-                        motion_array[current_y/16][current_x/16].x = displacement_x;
-                        motion_array[current_y/16][current_x/16].sad = sad;
-                    }
-                    if(sad < motion_array[current_y/16][current_x/16].sad){
-                        motion_array[current_y/16][current_x/16].y = displacement_y;
-                        motion_array[current_y/16][current_x/16].x = displacement_x;
-                        motion_array[current_y/16][current_x/16].sad = sad;
-                    }
+
+                if(temp_vector.sad < home_vector.sad){
+                    home_vector = temp_vector;
+                }else{
+                    step = step >> 1;   
+                }
+                if(reference_x == 112 && reference_y == 32){
+                    printf("Block (%d, %d) -> (%d, %d, %d), Step: %d\n", reference_x, reference_y, home_vector.x, home_vector.y, home_vector.sad, step ); 
                 }
             }
-        }
+
+            home_vector.x = home_vector.x - reference_x;
+            home_vector.y = home_vector.y - reference_y;
+
+            motion_array[reference_y/16][reference_x/16] = home_vector;
+        }   
     }
+
+    sad = 0;
+    for(i = 0; i < 16; i++){
+        calculate_row_sad(reference_luminance_pixles[32 + i], current_luminance_pixles[32 + i], &sad, 112, 120);
+    }
+    printf("Sad: %d\n", sad);
 
     FILE *out_fp;
     out_fp = fopen("motion_vectors.txt","w");
