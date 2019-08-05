@@ -70,37 +70,45 @@ int main(int argc, char *argv[]){
 
     struct Motion_Vector motion_array[reference_bmp.height/16][reference_bmp.width/16];
 
-//For each block of current 
-    for(current_y = 0; current_y < reference_bmp.height; current_y+=16){
-        for(current_x = 0; current_x <  reference_bmp.width; current_x+=16){
-            motion_array[current_y/16][current_x/16].sad = INT_MAX;
+//For each block of refernec 
+    for(reference_y = 0; reference_y < reference_bmp.height; reference_y+=16){
+        for(reference_x = 0; reference_x <  reference_bmp.width; reference_x+=16){
+            motion_array[reference_y/16][reference_x/16].sad = INT_MAX;
             //For every location in reference, find best_sad
-            for(reference_y = 0; reference_y < reference_bmp.height - 15; reference_y++){
-                for(reference_x = 0; reference_x <  reference_bmp.width - 15; reference_x++){
-                    vector = motion_array[current_y/16][current_x/16];  
+            for(current_y = 0; current_y < reference_bmp.height - 15; current_y++){
+                for(current_x = 0; current_x <  reference_bmp.width - 15; current_x++){
+                    vector = motion_array[reference_y/16][reference_x/16];  
                     //SAD
                     sad = 0;
                     for(i = 0; i < 16; i++){
                         calculate_row_sad(reference_luminance_pixles[reference_y + i], current_luminance_pixles[current_y + i], &sad, reference_x, current_x);
                     }
+                    if(sad == 2486 && reference_x == 112 && reference_y == 32){
+                        printf("(%d, %d) -> (%d, %d)\n", reference_x, reference_y, current_x, current_y);
+                    }
 
                     displacement_x = current_x - reference_x;
                     displacement_y = current_y - reference_y;
                     //If best Sad replace motion array and update value
-                    if(sad == motion_array[current_y/16][current_x/16].sad && abs(displacement_x) + abs(displacement_y) < abs(vector.x) + abs(vector.y)){
-                        motion_array[current_y/16][current_x/16].y = displacement_y;
-                        motion_array[current_y/16][current_x/16].x = displacement_x;
-                        motion_array[current_y/16][current_x/16].sad = sad;
+                    if(sad == motion_array[reference_y/16][reference_x/16].sad && abs(displacement_x) + abs(displacement_y) < abs(vector.x) + abs(vector.y)){
+                        motion_array[reference_y/16][reference_x/16].y = displacement_y;
+                        motion_array[reference_y/16][reference_x/16].x = displacement_x;
+                        motion_array[reference_y/16][reference_x/16].sad = sad;
                     }
-                    if(sad < motion_array[current_y/16][current_x/16].sad){
-                        motion_array[current_y/16][current_x/16].y = displacement_y;
-                        motion_array[current_y/16][current_x/16].x = displacement_x;
-                        motion_array[current_y/16][current_x/16].sad = sad;
+                    if(sad < motion_array[reference_y/16][reference_x/16].sad){
+                        motion_array[reference_y/16][reference_x/16].y = displacement_y;
+                        motion_array[reference_y/16][reference_x/16].x = displacement_x;
+                        motion_array[reference_y/16][reference_x/16].sad = sad;
                     }
                 }
             }
         }
     }
+    sad = 0;
+    for(i = 0; i < 16; i++){
+        calculate_row_sad(reference_luminance_pixles[32 + i], current_luminance_pixles[32 + i], &sad, 112, 120);
+    }
+    printf("Sad: %d\n", sad);
 
     FILE *out_fp;
     out_fp = fopen("motion_vectors.txt","w");
