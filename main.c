@@ -99,9 +99,6 @@ int main(int argc, char *argv[]){
                     for(i = 0; i < 16; i++){
                         calculate_row_sad(reference_luminance_pixles[reference_y + i], current_luminance_pixles[home_vector.y + i], &sad, reference_x, temp_x);
                     }
-                    if(reference_x == 112 && reference_y == 48){
-                        printf("Left Sad:(%d, %d, %d)\n", temp_x, home_vector.y, sad); 
-                    }
                     if(sad < temp_vector.sad ){
                         temp_vector.sad = sad;
                         temp_vector.x = temp_x;
@@ -116,9 +113,6 @@ int main(int argc, char *argv[]){
                     for(i = 0; i < 16; i++){
                         calculate_row_sad(reference_luminance_pixles[reference_y + i], current_luminance_pixles[home_vector.y + i], &sad, reference_x, temp_x);
                     }
-                    if(reference_x == 112 && reference_y == 48){
-                        printf("Right Sad:(%d, %d, %d)\n", temp_x, home_vector.y, sad); 
-                    }
                     if(sad < temp_vector.sad ){
                         temp_vector.sad = sad;
                         temp_vector.x = temp_x;
@@ -131,9 +125,6 @@ int main(int argc, char *argv[]){
                     sad = 0;
                     for(i = 0; i < 16; i++){
                         calculate_row_sad(reference_luminance_pixles[reference_y + i], current_luminance_pixles[temp_y + i], &sad, reference_x, home_vector.x);
-                    }
-                    if(reference_x == 112 && reference_y == 48){
-                        printf("Down Sad:(%d, %d, %d)\n", home_vector.x, temp_y,  sad); 
                     }
                     if(sad < temp_vector.sad ){
                         temp_vector.sad = sad;
@@ -149,9 +140,6 @@ int main(int argc, char *argv[]){
                     for(i = 0; i < 16; i++){
                         calculate_row_sad(reference_luminance_pixles[reference_y + i], current_luminance_pixles[temp_y + i], &sad, reference_x, home_vector.x);
                     }
-                    if(reference_x == 112 && reference_y == 48){
-                        printf("Up Sad:(%d, %d, %d)\n", home_vector.x, temp_y,  sad); 
-                    }
                     if( sad < temp_vector.sad){
                         temp_vector.sad = sad;
                         temp_vector.x = home_vector.x;
@@ -165,9 +153,6 @@ int main(int argc, char *argv[]){
                 }else{
                     step = step >> 1;   
                 }
-                if(reference_x == 112 && reference_y == 48){
-                    printf("Block (%d, %d) -> (%d, %d, %d), Step: %d\n", reference_x, reference_y, home_vector.x, home_vector.y, home_vector.sad, step ); 
-                }
             }
 
             home_vector.x = home_vector.x - reference_x;
@@ -176,12 +161,6 @@ int main(int argc, char *argv[]){
             motion_array[reference_y/16][reference_x/16] = home_vector;
         }   
     }
-
-    sad = 0;
-    for(i = 0; i < 16; i++){
-        calculate_row_sad(reference_luminance_pixles[48 + i], current_luminance_pixles[44 + i], &sad, 112, 118);
-    }
-    printf("Sad: %d\n", sad);
 
     FILE *out_fp;
     out_fp = fopen("motion_vectors.txt","w");
