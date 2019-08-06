@@ -5,7 +5,6 @@
 #include "bmp_file.h"
 
 unsigned char calculate_luminance(unsigned char red, unsigned char blue, unsigned char green);
-void calculate_row_sad(unsigned char *reference_row, unsigned char *current_row, int *sad, int reference_x , int current_x);
 
 struct Motion_Vector
 {
@@ -64,7 +63,7 @@ int main(int argc, char *argv[]){
 
 //Perform algorithm
     int sad, temp_x, temp_y, reference_y, reference_x, displacement_y, displacement_x = 0;
-    int diff_a, diff_b;
+    int diff;
     int step = 8;
     struct Motion_Vector home_vector;
     struct Motion_Vector temp_vector;
@@ -84,7 +83,25 @@ int main(int argc, char *argv[]){
             home_vector.x = reference_x;
             home_vector.y = reference_y;
             for(i = 0; i < 16; i++){
-                calculate_row_sad(reference_luminance_pixles[reference_y + i], current_luminance_pixles[home_vector.y + i], &home_vector.sad, reference_x, home_vector.x);
+                for(i = 0; i < 16; i++){
+
+                        diff = (int) reference_luminance_pixles[reference_y + i][reference_x + j] - (int) current_luminance_pixles[home_vector.y + i][ home_vector.x + j];
+                        for(j = 1; j < 16; j++){
+                            
+                            if( diff < 0){
+                                home_vector.sad -= diff;
+                            }else{
+                                home_vector.sad+= diff;
+                            }
+                            diff = (int) reference_luminance_pixles[reference_y + i][reference_x + j] - (int) current_luminance_pixles[home_vector.y+ i][home_vector.x + j];
+                        }
+
+                        if( diff < 0){
+                            home_vector.sad -= diff;
+                        }else{
+                            home_vector.sad += diff;
+                        }
+                    } 
             }
             step = 8;
 
@@ -97,13 +114,24 @@ int main(int argc, char *argv[]){
                 if(temp_x >= 0){
                     sad = 0;
                     for(i = 0; i < 16; i++){
-                        calculate_row_sad(reference_luminance_pixles[reference_y + i], current_luminance_pixles[home_vector.y + i], &sad, reference_x, temp_x);
-                    }
-                    if(sad < temp_vector.sad ){
-                        temp_vector.sad = sad;
-                        temp_vector.x = temp_x;
-                        temp_vector.y = home_vector.y;
-                    }   
+
+                        diff = (int) reference_luminance_pixles[reference_y + i][reference_x + j] - (int) current_luminance_pixles[home_vector.y + i][ temp_x + j];
+                        for(j = 1; j < 16; j++){
+                            
+                            if( diff < 0){
+                                sad -= diff;
+                            }else{
+                                sad+= diff;
+                            }
+                            diff = (int) reference_luminance_pixles[reference_y + i][reference_x + j] - (int) current_luminance_pixles[home_vector.y+ i][temp_x + j];
+                        }
+
+                        if( diff < 0){
+                            sad -= diff;
+                        }else{
+                            sad += diff;
+                        }
+                    }  
                 }
                 
                 //right sad
@@ -111,7 +139,24 @@ int main(int argc, char *argv[]){
                 if(temp_x <= reference_bmp.width){
                     sad = 0;
                     for(i = 0; i < 16; i++){
-                        calculate_row_sad(reference_luminance_pixles[reference_y + i], current_luminance_pixles[home_vector.y + i], &sad, reference_x, temp_x);
+
+                        diff = (int) reference_luminance_pixles[reference_y + i][reference_x + j] - (int) current_luminance_pixles[home_vector.y + i][ temp_x + j];
+                        for(j = 1; j < 16; j++){
+                            
+                            if( diff < 0){
+                                sad -= diff;
+                            }else{
+                                sad+= diff;
+                            }
+                            diff = (int) reference_luminance_pixles[reference_y + i][reference_x + j] - (int) current_luminance_pixles[home_vector.y+ i][temp_x + j];
+                        }
+
+                        if( diff < 0){
+                            sad -= diff;
+                        }else{
+                            sad += diff;
+                        }
+        
                     }
                     if(sad < temp_vector.sad ){
                         temp_vector.sad = sad;
@@ -124,7 +169,24 @@ int main(int argc, char *argv[]){
                 if(temp_y >= 0){
                     sad = 0;
                     for(i = 0; i < 16; i++){
-                        calculate_row_sad(reference_luminance_pixles[reference_y + i], current_luminance_pixles[temp_y + i], &sad, reference_x, home_vector.x);
+
+                        diff = (int) reference_luminance_pixles[reference_y + i][reference_x + j] - (int) current_luminance_pixles[temp_y + i][home_vector.x + j];
+                        for(j = 1; j < 16; j++){
+                            
+                            if( diff < 0){
+                                sad -= diff;
+                            }else{
+                                sad+= diff;
+                            }
+                            diff = (int) reference_luminance_pixles[reference_y + i][reference_x + j] - (int) current_luminance_pixles[temp_y + i][home_vector.x + j];
+                        }
+
+                        if( diff < 0){
+                            sad -= diff;
+                        }else{
+                            sad += diff;
+                        }
+        
                     }
                     if(sad < temp_vector.sad ){
                         temp_vector.sad = sad;
@@ -138,7 +200,24 @@ int main(int argc, char *argv[]){
                 if(temp_y <= reference_bmp.height){
                     sad = 0;
                     for(i = 0; i < 16; i++){
-                        calculate_row_sad(reference_luminance_pixles[reference_y + i], current_luminance_pixles[temp_y + i], &sad, reference_x, home_vector.x);
+
+                        diff = (int) reference_luminance_pixles[reference_y + i][reference_x + j] - (int) current_luminance_pixles[temp_y + i][home_vector.x + j];
+                        for(j = 1; j < 16; j++){
+                            
+                            if( diff < 0){
+                                sad -= diff;
+                            }else{
+                                sad+= diff;
+                            }
+                            diff = (int) reference_luminance_pixles[reference_y + i][reference_x + j] - (int) current_luminance_pixles[temp_y + i][home_vector.x + j];
+                        }
+
+                        if( diff < 0){
+                            sad -= diff;
+                        }else{
+                            sad += diff;
+                        }
+        
                     }
                     if( sad < temp_vector.sad){
                         temp_vector.sad = sad;
@@ -186,26 +265,5 @@ unsigned char calculate_luminance(unsigned char red, unsigned char green, unsign
     unsigned int luminance = ((299 * red + 587 * green + blue * 114))/1000;
 
     return (unsigned char) luminance;
-}
-
-void calculate_row_sad(unsigned char *reference_row, unsigned char *current_row, int *sad, int reference_x , int current_x){
-    int diff_a, j;
-
-    diff_a = (int) reference_row[reference_x + j] - (int) current_row[current_x + j];
-    for(j = 1; j < 16; j++){
-        
-        if( diff_a < 0){
-            (*sad) -= diff_a;
-        }else{
-            (*sad) += diff_a;
-        }
-        diff_a = (int) reference_row[reference_x + j] - (int) current_row[current_x + j];
-    }
-
-    if( diff_a < 0){
-        (*sad) -= diff_a;
-    }else{
-        (*sad) += diff_a;
-    }
 }
 
