@@ -89,7 +89,7 @@ int main(int argc, char *argv[]){
             step = 8;
 
             //Find best local sad
-            while(step >= 1){
+            while(step > 0){
                 temp_vector = home_vector;
 
                 //left sad
