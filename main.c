@@ -189,21 +189,14 @@ unsigned char calculate_luminance(unsigned char red, unsigned char green, unsign
 }
 
 void calculate_row_sad(unsigned char *reference_row, unsigned char *current_row, int *sad, int reference_x , int current_x){
-    int diff_a, diff_b,j;
-    for(j = 0; j < 16; j++){
-    // for(j = 0; j < 16; j+=2){
-        diff_a = (int) reference_row[reference_x + j] - (int) current_row[current_x + j];
-        // diff_b = (int) reference_row[reference_x + j + 1] - (int) current_row[current_x + j + 1];
-        if( diff_a < 0){
-            (*sad) -= diff_a;
-        }else{
-            (*sad) += diff_a;
-        }
-        // if( diff_b < 0){
-        //     (*sad) -= diff_b;
-        // }else{
-        //     (*sad) += diff_b;
-        // }
+    int j;
+    register int Rs1, Rs2, Rt;
+    __asm__( "RESET_SAD %1, %2, %0" : "=r" (Rt):"r" (Rs1),"r" (Rs2));
+    for(j = 0; j < 4; j++){
+        Rs1 = reference_row[reference_x + j];
+        Rs2 = current_row[current_x + j];
+        __asm__( "SAD %1, %2, %0" : "=r" (Rt):"r" (Rs1),"r" (Rs2));
     }
+    (*sad) = Rt;
 }
 
