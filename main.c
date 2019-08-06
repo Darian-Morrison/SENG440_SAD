@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <limits.h>
 #include <math.h>
 #include "bmp_file.h"
@@ -162,11 +161,6 @@ int main(int argc, char *argv[]){
             motion_array[reference_y/16][reference_x/16] = home_vector;
         }   
     }
-    sad = 0;
-    for(i = 0; i < 16; i++){
-        calculate_row_sad(reference_luminance_pixles[32 + i], current_luminance_pixles[32 + i], &sad, 112, 120);
-    }
-    printf("Sad: %d\n", sad);
 
     FILE *out_fp;
     out_fp = fopen("motion_vectors.txt","w");

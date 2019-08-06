@@ -1,6 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+
 #include "bmp_file.h"
 #define BLOCK_WIDTH 16
 
@@ -39,9 +37,6 @@ struct Bitmap_Headers get_header_values(FILE* fp){
 
     fseek( fp, 0x16, SEEK_SET );
     bmp.height = read_int_from_file(fp, 4);
-
-    bmp.pixels = (bmp.size - bmp.offset) >> 2;
-    bmp.number_of_chunks = bmp.pixels/(BLOCK_WIDTH*BLOCK_WIDTH);
 
     return bmp;
 }
